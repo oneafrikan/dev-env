@@ -20,6 +20,12 @@ __pycache__/
 # Logs
 *.log
 
+# LOGS/ (dev-journal convention) is personal, single source of truth in the
+# private repo. On machines that keep both repos as siblings, this is a
+# symlink to ../.dev-env/LOGS — gitignored so the symlink itself never gets
+# tracked here. Nothing in this repo requires LOGS/ to exist.
+LOGS
+
 # Dev-env runtime artifacts
 .dev-env-catalogue.db
 ~/.dev-env-alerts.log

@@ -81,3 +81,15 @@ Then add, commit, push as normal.
 `obsidian-vault-utils/` — daily-note workflow for one vault, plus index
 generation and backup across every vault listed in `vaults.conf` (gitignored
 — copy `vaults.conf.example` and edit).
+
+## LOGS/ — private repo is the single source of truth
+
+`LOGS/` (a dev-journal convention for session context/handoffs) deliberately
+doesn't exist as real content here — it's gitignored, and on a machine that
+also has the private counterpart checked out as a sibling directory, it's a
+symlink to it (`../.dev-env/LOGS` on Gareth's machines). If you're working in
+*this* checkout and about to write a session log or handoff note, it still
+belongs in the private repo, not a new local `LOGS/` here — one repo split
+across two checkouts should never mean two divergent log trails. Nothing in
+this repo requires `LOGS/` to exist; a fresh standalone clone just won't have
+it, and that's fine.

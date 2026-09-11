@@ -1,0 +1,4 @@
+# Active Obsidian vaults to manage (one path per line)
+# Copy to vaults.conf (gitignored) and edit with your own vault paths
+/Users/you/Obsidian/MyVault
+/Users/you/Obsidian/AnotherVault

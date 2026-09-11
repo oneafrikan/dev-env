@@ -1,0 +1,24 @@
+# ─────────────────────────────────────────────
+# python/base-requirements.txt
+# Installed into every new venv via mkvenv
+# ─────────────────────────────────────────────
+
+# Dev tools
+ipython
+rich
+httpx
+python-dotenv
+pydantic
+
+# Testing
+pytest
+pytest-asyncio
+
+# Type checking
+mypy
+
+# Linting
+ruff
+
+# Security
+pip-audit

@@ -1,0 +1,7 @@
+# endpoints.conf — external endpoints to check
+# Copy to endpoints.conf (gitignored) and edit
+# Format: name  url
+
+anthropic-api       https://api.anthropic.com
+github              https://github.com
+google-apis         https://www.googleapis.com

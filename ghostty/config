@@ -1,0 +1,13 @@
+# Ghostty config — used by Supacode (libghostty)
+# Managed in dev-env. Symlink: ~/.config/ghostty/config -> ~/.dev-env/ghostty/config
+
+# ── Appearance ─────────────────────────────────────────────────────────────────
+
+# Solid background — no translucency
+background-opacity = 1.0
+background-blur = false
+
+# ── Font ───────────────────────────────────────────────────────────────────────
+
+font-family = "FiraCode Nerd Font"
+font-size = 15

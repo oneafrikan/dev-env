@@ -1,0 +1,8 @@
+# services.conf — local services to health-check
+# Copy to services.conf (gitignored) and edit for your machine
+# Format: name  type  target
+# Types: http (URL), process (process name)
+
+openclaw  http     http://localhost:8000/health
+ollama    http     http://localhost:11434/api/tags
+duckdb    process  duckdb

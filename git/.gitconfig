@@ -1,0 +1,43 @@
+[user]
+	name = Your Name
+	email = you@example.com
+
+[core]
+	editor = cursor --wait
+	pager = delta
+	autocrlf = input
+
+[init]
+	defaultBranch = main
+
+[push]
+	default = current
+	autoSetupRemote = true
+
+[pull]
+	rebase = true
+
+[merge]
+	conflictstyle = diff3
+
+[diff]
+	colorMoved = default
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true
+	light = false
+	side-by-side = true
+	line-numbers = true
+
+[alias]
+	st = status -sb
+	lg = log --oneline --graph --decorate -20
+	co = checkout
+	br = branch
+	unstage = reset HEAD --
+	last = log -1 HEAD --stat
+	who = shortlog -sn --no-merges
+	undo = reset --soft HEAD~1

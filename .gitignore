@@ -1,0 +1,39 @@
+# Secrets — never commit
+.env
+.env.*
+*.env
+!.env.example
+
+# macOS
+.DS_Store
+._*          # AppleDouble sidecar files (created when a Mac touches the repo over SMB)
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# Logs
+*.log
+
+# Dev-env runtime artifacts
+.dev-env-catalogue.db
+~/.dev-env-alerts.log
+
+# Machine-specific config — use *.example counterparts
+services/services.conf
+network/endpoints.conf
+uptime-kuma/monitors.json
+obsidian-vault-utils/vaults.conf
+
+# Per-machine, not part of this repo — see scripts/iterm2-profiles/README.md
+scripts/iterm2-profiles/profiles/*.json
+!scripts/iterm2-profiles/profiles/example.json
+
+# Per-machine contexts — see contexts/CLAUDE.md
+contexts/*.sh
+!contexts/example.sh

@@ -1,0 +1,23 @@
+{
+  "Profiles": [
+    {
+      "Guid": "REPLACE-WITH-A-UUID-uuidgen",
+      "Name": "example-machine",
+      "Description": "dev-env managed profile — example-machine",
+      "Background Color": {
+        "Color Space": "sRGB",
+        "Red Component": 0.0,
+        "Green Component": 0.2,
+        "Blue Component": 0.35,
+        "Alpha Component": 1.0
+      },
+      "Background Color (Dark)": {
+        "Color Space": "sRGB",
+        "Red Component": 0.0,
+        "Green Component": 0.2,
+        "Blue Component": 0.35,
+        "Alpha Component": 1.0
+      }
+    }
+  ]
+}

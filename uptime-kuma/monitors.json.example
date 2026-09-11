@@ -1,0 +1,31 @@
+{
+  "status_page": {
+    "slug": "homelab",
+    "title": "Homelab Status",
+    "description": "Example homelab — replace with your own machine list",
+    "theme": "dark"
+  },
+  "monitors": [
+    {
+      "type": "ping",
+      "name": "example-host — ping",
+      "hostname": "192.0.2.10",
+      "interval": 60
+    },
+    {
+      "type": "http",
+      "name": "example-nas — web UI",
+      "url": "https://192.0.2.20",
+      "interval": 60,
+      "accepted_statuscodes": ["200-299", "302"],
+      "ignoreTls": true
+    },
+    {
+      "type": "http",
+      "name": "example-public-site",
+      "url": "https://example.com",
+      "interval": 60,
+      "maxredirects": 5
+    }
+  ]
+}

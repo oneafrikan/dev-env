@@ -20,7 +20,7 @@ DRY_RUN=0
 for arg in "$@"; do
   case "$arg" in
     --dry-run|-n) DRY_RUN=1 ;;
-    -h|--help) sed -n '3,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '3,15p' "${BASH_SOURCE[0]:-$0}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "  ✗ unknown argument: $arg (try --dry-run)" >&2; exit 2 ;;
   esac
 done
@@ -28,13 +28,20 @@ done
 # Repo root = the directory holding this script, so a clone anywhere (and a
 # fork cloned to ~/.dev-env) wires itself, not some other clone. Falls back to
 # ~/.dev-env if the script location can't be resolved (e.g. piped into bash).
-_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || _here=""
+_src="${BASH_SOURCE[0]:-$0}"   # unset when piped (curl | bash); $0 is then just "bash"
+_here=""
+[[ -f "$_src" ]] && { _here="$(cd "$(dirname "$_src")" 2>/dev/null && pwd)" || _here=""; }
 if [[ -n "$_here" && -d "$_here/bootstrap" ]]; then
   DEV_ENV="$_here"
-else
+elif [[ -d "$HOME/.dev-env/bootstrap" ]]; then
   DEV_ENV="$HOME/.dev-env"
+  echo "  ⚠ can't locate this script on disk (piped into bash?) — using $DEV_ENV" >&2
+else
+  echo "  ✗ can't locate this script on disk (piped into bash?) and $HOME/.dev-env has no bootstrap/." >&2
+  echo "    Piping isn't supported — clone first: git clone <repo-url> ~/.dev-env && bash ~/.dev-env/bootstrap.sh" >&2
+  exit 1
 fi
-unset _here
+unset _src _here
 
 log()  { echo "  [bootstrap] $1"; }
 ok()   { echo "  ✓ $1"; }
@@ -222,19 +229,25 @@ else
   did ".tmux.conf symlinked"
 fi
 
-# .gitconfig (template only — user must set name/email)
+# .gitconfig (template only — user must set name/email). Skip if ANY global
+# git config exists (~/.gitconfig, XDG, or an identity git already resolves):
+# a template ~/.gitconfig would override an XDG config's name/email/editor.
 GITCONFIG="$HOME/.gitconfig"
-if [[ ! -f "$GITCONFIG" ]]; then
+GITCONFIG_XDG="${XDG_CONFIG_HOME:-$HOME/.config}/git/config"
+if [[ -f "$GITCONFIG" || -f "$GITCONFIG_XDG" \
+      || -n "$(git config --global --get user.name 2>/dev/null || true)" \
+      || -n "$(git config --global --get user.email 2>/dev/null || true)" ]]; then
+  ok "global git config already exists — not copying the template"
+  _gitcfg=(--global)
+else
   run cp "$DEV_ENV/git/.gitconfig" "$GITCONFIG"
   did ".gitconfig copied (edit it to set user.name and user.email)"
-else
-  ok ".gitconfig already exists — not overwriting"
+  _gitcfg=(--file "$DEV_ENV/git/.gitconfig")   # what the copy will contain
 fi
 
 # The template sets core.editor = "cursor --wait". Don't change it — just say
 # so if cursor isn't here, since `git commit` would otherwise fail confusingly.
-GITCONFIG_SRC="$GITCONFIG"; [[ -f "$GITCONFIG" ]] || GITCONFIG_SRC="$DEV_ENV/git/.gitconfig"
-if grep -Eq '^[[:space:]]*editor[[:space:]]*=[[:space:]]*cursor' "$GITCONFIG_SRC" 2>/dev/null \
+if [[ "$(git config "${_gitcfg[@]}" --get core.editor 2>/dev/null || true)" == cursor* ]] \
    && ! command -v cursor &>/dev/null; then
   if is_dry && [[ "$PLATFORM" == darwin ]]; then
     ok "cursor will come from the Brewfile cask (git core.editor = cursor)"

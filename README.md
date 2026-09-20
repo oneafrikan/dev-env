@@ -38,6 +38,7 @@ new-machine setup: installs tools, symlinks dotfiles, wires the shell.
 | Piece | Role |
 |---|---|
 | `bootstrap.sh` | One-shot new-machine setup — idempotent, safe to re-run |
+| `bootstrap/`, `packages/`, `config/mise.toml` | Per-platform installers (`bootstrap/<os>.sh`), package lists, and the mise tool versions that `bootstrap.sh` reads |
 | `Justfile` | Task runner — `just <recipe>` in place of remembering script paths |
 | `shell/functions.zsh` | Defines `ctx` and a handful of daily-use shell functions |
 | `contexts/*.sh` | One script per project — the actual `ctx` targets (bring your own) |
@@ -62,7 +63,7 @@ session. Preview any run first with `bash ~/.dev-env/bootstrap.sh --dry-run`
 ```bash
 llm keys set anthropic     # set your Anthropic API key
 op signin                  # sign into 1Password CLI
-source ~/.zshrc            # reload shell
+source ~/.zshrc            # reload shell (Linux bash: source ~/.bashrc)
 
 tmux new-session           # install tmux plugins: prefix + I (Ctrl+A then Shift+I)
 

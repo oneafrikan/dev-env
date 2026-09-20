@@ -4,7 +4,18 @@
 #   source "$HOME/.dev-env/shell/functions.zsh"
 # ─────────────────────────────────────────────
 
-export DEV_ENV="$HOME/.dev-env"
+# DEV_ENV = repo root (parent of shell/), so the clone can live anywhere. Falls back to
+# ~/.dev-env if this file's location can't be resolved (e.g. sourced via a symlink).
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+  eval '_de_src="${(%):-%x}"'  # eval: the (%) flag is a bash bad-substitution
+else
+  _de_src="${BASH_SOURCE[0]:-}"
+fi
+DEV_ENV=""
+if [[ -n "$_de_src" ]]; then DEV_ENV="$(CDPATH= cd "$(dirname "$_de_src")/.." 2>/dev/null && pwd)" || DEV_ENV=""; fi
+[[ -f "$DEV_ENV/shell/functions.zsh" ]] || DEV_ENV="$HOME/.dev-env"
+export DEV_ENV
+unset _de_src
 
 # ── ctx: switch context from anywhere ─────────
 # Drop your own contexts/<name>.sh scripts in — this repo ships the mechanism,

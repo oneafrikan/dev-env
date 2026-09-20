@@ -1,0 +1,40 @@
+# ─────────────────────────────────────────────
+# config/mise.toml — cross-platform CLI tools
+# One list for Linux (Ubuntu + Arch); bootstrap.sh symlinks this into
+# ~/.config/mise/conf.d/dev-env.toml and runs `mise install`.
+#
+# macOS does NOT read this: the Brewfile already provides the same tools and
+# stays the macOS source of truth. Keep the two lists in step by hand.
+#
+# Every name below was checked with `mise registry | grep -i <name>`.
+# Tools mise does not provide live in packages/*.txt (or the Brewfile).
+# ─────────────────────────────────────────────
+[tools]
+# Core
+delta = "latest"      # Brewfile: git-delta (registry name is `delta`)
+gh = "latest"
+
+# Modern CLI replacements
+eza = "latest"
+bat = "latest"
+ripgrep = "latest"
+fd = "latest"
+zoxide = "latest"
+fzf = "latest"
+btop = "latest"
+
+# Data
+duckdb = "latest"
+jq = "latest"
+yq = "latest"
+
+# Security
+gitleaks = "latest"
+
+# Python
+uv = "latest"
+
+# Utilities
+just = "latest"
+direnv = "latest"
+atuin = "latest"

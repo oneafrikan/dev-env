@@ -1,0 +1,11 @@
+# Arch: official-repo packages mise cannot provide (not in `mise registry`).
+# One per line; `#` starts a comment. Installed with `pacman -S --needed`.
+git      # not in mise registry; needed to clone TPM
+tmux     # kept native: tmux.conf + TPM expect a distro tmux
+zsh      # dev-env shell files are .zsh; optional login shell
+wget
+htop
+tree
+httpie   # Python app, no mise registry entry (only httpie-go)
+csvkit   # Python app, not in mise registry
+# not listed on purpose: curl and watch (procps-ng) are in Arch's base set.

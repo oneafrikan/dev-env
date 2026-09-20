@@ -1,6 +1,6 @@
 # dev-env
 
-A personal Mac/Ubuntu developer environment — one command gets you into a
+A personal Mac/Ubuntu/Arch developer environment — one command gets you into a
 fully-formed working context. It's not a framework; it's one person's
 opinionated set of scripts for daily friction. Fork it for your own.
 
@@ -52,7 +52,12 @@ git clone https://github.com/oneafrikan/dev-env.git ~/.dev-env \
   && bash ~/.dev-env/bootstrap.sh
 ```
 
-That installs Homebrew + tools, symlinks dotfiles, and wires `.zshrc`. Then:
+That installs your tools, symlinks dotfiles, and wires your shell rc. It picks
+the platform itself — macOS (Homebrew + `Brewfile`), Ubuntu (apt + mise) or Arch
+(pacman/yay + mise) — and on Linux skips GUI apps when there's no desktop
+session. Preview any run first with `bash ~/.dev-env/bootstrap.sh --dry-run`
+(prints every action, changes nothing). Overrides for odd setups:
+`DEV_ENV_OS=darwin|ubuntu|arch`, `DEV_ENV_HEADLESS=0|1`. Then:
 
 ```bash
 llm keys set anthropic     # set your Anthropic API key

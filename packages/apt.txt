@@ -1,0 +1,15 @@
+# Ubuntu: apt packages mise cannot provide (not in `mise registry`).
+# One per line; `#` starts a comment. Installed with `apt-get install -y`.
+ca-certificates  # TLS for wget/curl on minimal server images
+curl             # not in mise registry; fetch tool for the rest of dev-env
+wget             # used to fetch the mise apt-repo signing key
+gpg              # dearmors that key
+git              # not in mise registry; needed to clone TPM
+tmux             # kept native: tmux.conf + TPM expect a distro tmux
+zsh              # dev-env shell files are .zsh; optional login shell
+htop
+tree
+httpie           # Python app, no mise registry entry (only httpie-go)
+csvkit           # Python app, not in mise registry
+# not listed on purpose: watch (procps) is in Ubuntu's base install.
+# Desktop-only GUI apps (Obsidian, Cursor) are handled in bootstrap/ubuntu.sh.

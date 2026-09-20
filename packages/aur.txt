@@ -1,0 +1,5 @@
+# Arch, DESKTOP ONLY (skipped when headless): GUI apps, the Brewfile's casks.
+# Installed with `yay -S --needed` when yay is present. yay also resolves
+# official-repo and third-party-repo packages, so repo location does not matter.
+cursor-bin   # editor; git/.gitconfig sets core.editor = "cursor --wait"
+obsidian     # notes app

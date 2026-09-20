@@ -30,10 +30,10 @@ ctx() {
 }
 
 # zsh tab completion for ctx — discovers whatever's in contexts/
-if [[ -n "$ZSH_VERSION" ]]; then
+if [[ -n "${ZSH_VERSION:-}" ]]; then
   _ctx_complete() {
     local -a contexts
-    contexts=("$DEV_ENV"/contexts/*.sh(:t:r N))
+    eval 'contexts=("$DEV_ENV"/contexts/*.sh(:t:r N))'  # eval: glob qualifier is a bash parse error
     _describe 'context' contexts
   }
   compdef _ctx_complete ctx

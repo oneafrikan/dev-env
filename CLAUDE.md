@@ -50,6 +50,28 @@ meta/stub-audit.sh  # canonical stub finder
   gitignored, with a `*.example` counterpart committed — see `homelab`-style
   configs in `services/`, `network/`, `uptime-kuma/`, `obsidian-vault-utils/`
 
+## Portability (macOS / Ubuntu / Arch)
+
+Runs on macOS, Ubuntu and Arch (Omarchy: bash + Hyprland + foot). Assume nothing mac-only or Debian-only.
+
+- OS-dependent ops go through `lib/platform.sh` (`platform_open_url`, `platform_open_app`,
+  `platform_open_workspace`, `platform_switch_space`, `platform_stat_mtime`,
+  `platform_disk_free`; `$OS` is `mac` or `linux`) — never inline bare `open`, `stat -f`,
+  `sed -i ''`. No shim exists yet for `pbcopy`, `date -v` or `brew`: add one there, don't inline.
+  `platform_sed_i` is known-broken (echoes `-i ''`, which word-splits to a literal `''` arg on
+  macOS) — don't use until fixed.
+- Under `set -u`, write `${VAR:-}` for anything possibly unset. `shell/functions.zsh` is sourced
+  by `contexts/*.sh`, which run under bash with `set -euo pipefail`.
+- Everything in `shell/` must work when sourced by both bash and zsh — no zsh-only syntax.
+- NEW mac-only scripts must check `uname -s` is `Darwin` and `exit 0` off it (pattern:
+  `macos/caffeinate.sh`, `macos/dnd.sh`). Existing `macos/` stubs and `scripts/iterm2-profiles/setup.sh` aren't guarded yet.
+- Install hints and error messages must not assume Homebrew; name the tool, and give the
+  brew/apt/pacman equivalent when a hint is needed.
+- Per-machine differences go in gitignored config with a committed `*.example` (see Conventions),
+  not in `if [[ $OS … ]]` or hostname branches scattered through scripts.
+- Verification: only the OS you're running on can be tested. State which OS a change was run on,
+  and say plainly what was only read or reasoned about, not run.
+
 ## iTerm2 per-machine profiles
 
 `scripts/iterm2-profiles/` — gives each machine an iTerm2 Dynamic Profile with

@@ -17,7 +17,7 @@ notes shared for reuse, not a supported manual.
 
 Each code block starts with a tag saying where its commands came from:
 
-- `[verified: arch-local]`: run read-only (or its flags confirmed with `--help`/`man`) on a real Arch machine. Only this tag means "actually executed".
+- `[verified: arch-local]`: flags confirmed via `--help`/`man`, or run read-only on a real Arch machine. State-changing commands were never run and carry `[docs]` instead.
 - `[docs]`: taken from official documentation or man pages that were read, **not run**. Everything for Ubuntu, macOS, and TrueNAS is at best this.
 - `[unverified]`: believed correct, not confirmed. Check before relying on it.
 - `⚠`: destructive or hard to undo; the safe variant (list, dry-run, UI) is shown first.
@@ -45,13 +45,13 @@ its UI or API instead. TrueNAS commands are for the SCALE lineage unless noted;
 | Remove unused dependencies | `sudo pacman -Rns $(pacman -Qdtq)` (list first: `pacman -Qdtq`) | `sudo apt autoremove --purge` (preview: `apt -s autoremove`) | `brew autoremove --dry-run`, then without the flag | N/A |
 | Clean package cache | `sudo paccache -rk2` (preview: `paccache -d`) | `sudo apt clean` | `brew cleanup -n`, then without `-n` | N/A. Prune old boot environments in System > Boot |
 | Hold / pin a version | `IgnorePkg = <pkg>` in `/etc/pacman.conf` | `sudo apt-mark hold <pkg>` | `brew pin <formula>` | Update Profile; N/A per package |
-| Service status | `systemctl status <unit>` | `systemctl status <unit>` (SSH is `ssh`, not `sshd`) | `launchctl print gui/$(id -u)/<label>`, `brew services list` | System > Services |
+| Service status | `systemctl status <unit>` | `systemctl status <unit>` (SSH is `ssh.service`; on 26.04 `sshd.service` is an alias) | `launchctl print gui/$(id -u)/<label>`, `brew services list` | System > Services |
 | Start now and at boot | `sudo systemctl enable --now <unit>` | `sudo systemctl enable --now <unit>` | `launchctl bootstrap gui/$(id -u) <plist>`, `brew services start <f>` | System > Services (Start Automatically) |
-| Scheduled jobs | `systemctl list-timers` | `systemctl list-timers`, cron | launchd agent with `StartInterval` in `~/Library/LaunchAgents` | Data Protection tasks, System > Advanced > Cron Jobs |
+| Scheduled jobs | `systemctl list-timers` | `systemctl list-timers`, cron | launchd agent with `StartInterval` in `~/Library/LaunchAgents` | Data Protection tasks, System > Advanced Settings > Cron Jobs |
 | Tail logs | `journalctl -u <unit> -f` | `journalctl -u <unit> -f` | `log stream --predicate 'process == "<name>"'` | Alerts, Jobs; over SSH `/var/log/` |
 | Listening ports | `ss -tulpn` | `ss -tulpn` | `lsof -i -sTCP:LISTEN -n -P` | `sudo ss -tulpn` (CORE: `sockstat -4 -l`) |
 | Process using port 8080 | `sudo ss -ltnp 'sport = :8080'`, then `kill <pid>` | same as Arch | `lsof -i TCP:8080 -sTCP:LISTEN -n -P`, then `kill <pid>` | N/A. Stop the service or app in the UI |
-| Open a firewall port | `sudo ufw allow 8080/tcp` (if ufw is your firewall) | `sudo ufw allow 8080/tcp` | App Firewall prompts per app; port rules via `pf` anchors | No host firewall UI: limit service bind addresses and share allowed hosts |
+| Open a firewall port | `sudo ufw allow 8080/tcp` (if ufw is your firewall) | `sudo ufw allow 8080/tcp` | App Firewall prompts per app; port rules via `pf` anchors | `[unverified]` No host firewall UI: limit service bind addresses and share allowed hosts |
 | Disk usage overview | `df -h`, `sudo btrfs filesystem usage /` | `df -h` | `df -h` (misleads on APFS), `diskutil apfs list` | `zpool list -v`, `zfs list -o space -r <pool>` |
 | What is eating disk | `sudo du -xh --max-depth=1 /` (pipe to `sort -h`) | same as Arch | `du -xh -d 1 ~` (pipe to `sort -h`) | Snapshots first: `zfs list -t snapshot -r <pool> -o name,used -s used` |
 | List block devices | `lsblk -f` | `lsblk -f` | `diskutil list` | Storage > Disks |

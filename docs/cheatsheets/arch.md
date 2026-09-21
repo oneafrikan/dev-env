@@ -78,12 +78,15 @@ exception is refreshing `archlinux-keyring` (below).
 ```bash
 # [verified: arch-local] orphans (autoremove equivalent): list first, empty output = none
 pacman -Qdtq
-# [docs] then, after reading the list. ⚠
-sudo pacman -Rns $(pacman -Qdtq)
-# [verified: arch-local] cache: paccache is in pacman-contrib; default keeps 3 versions
+# cache: paccache is in pacman-contrib; default keeps 3 versions
 paccache -d                      # dry run
+```
+
+```bash
+# [docs] not run. Remove orphans only after reading the list. ⚠
+sudo pacman -Rns $(pacman -Qdtq)
 sudo paccache -rk2               # ⚠ prune to the 2 newest versions per package
-sudo systemctl enable --now paccache.timer     # [docs] the unit ships with pacman-contrib
+sudo systemctl enable --now paccache.timer     # the unit ships with pacman-contrib
 # ⚠ never `pacman -Scc` as routine: it deletes the only offline downgrade path
 ```
 
@@ -165,10 +168,14 @@ journalctl -b -p err                 # errors this boot        journalctl -k   k
 journalctl -u <unit> -f              # follow a unit           journalctl --user-unit <unit>
 journalctl --since "1 hour ago"      # also --until            journalctl -g '<regex>'
 journalctl --disk-usage
-sudo journalctl --vacuum-size=500M   # ⚠ deletes old logs (or --vacuum-time=2weeks)
 # crashes: core_pattern points at systemd-coredump on this machine
 cat /proc/sys/kernel/core_pattern
 coredumpctl list --no-pager; coredumpctl info -1; coredumpctl debug -1   # last crash; debug needs gdb
+```
+
+```bash
+# [docs] not run
+sudo journalctl --vacuum-size=500M   # ⚠ deletes old logs (or --vacuum-time=2weeks)
 ```
 
 ```bash
@@ -188,10 +195,17 @@ sudo du -xh --max-depth=1 / 2>/dev/null | sort -h | tail -15
 
 ```bash
 # [verified: arch-local] read-only
-ip -br a; ip route; resolvectl status; resolvectl query <name>; sudo resolvectl flush-caches
+ip -br a; ip route; resolvectl status; resolvectl query <name>
 nmcli general status; nmcli device; nmcli connection show
-nmcli device wifi list; nmcli device wifi connect "<SSID>" --ask; nmcli radio wifi on|off
+nmcli device wifi list
 ping -c3 1.1.1.1 && ping -c3 example.com     # separates routing from DNS
+```
+
+```bash
+# [docs] state-changing, not run
+sudo resolvectl flush-caches                 # clear the resolver cache
+nmcli device wifi connect "<SSID>" --ask     # join a Wi-Fi network
+nmcli radio wifi on|off                      # ⚠ off drops your connection (lockout risk if you are on Wi-Fi SSH)
 ```
 
 iwd users: `iwctl` is the client `[docs]` (not installed on the reference machine).
@@ -240,8 +254,12 @@ sudo sshd -t && sudo systemctl restart sshd
 lsblk -f; findmnt --verify           # devices/UUIDs; lint /etc/fstab (no output = clean)
 df -h /; swapon --show; zramctl
 sudo btrfs filesystem usage /        # real allocation; df misleads on btrfs
-sudo btrfs scrub start -B / && sudo btrfs scrub status /      # checksum verify, monthly
-sudo btrfs balance start -dusage=10 /    # only if unallocated space is nearly gone; not routine
+```
+
+```bash
+# [docs] btrfs maintenance, not run (both are heavy on I/O)
+sudo btrfs scrub start -B / && sudo btrfs scrub status /      # ⚠ heavy I/O; checksum verify, monthly
+sudo btrfs balance start -dusage=10 /    # ⚠ heavy, can take hours; only if unallocated space is nearly gone; not routine
 ```
 
 - **fstab**: `UUID=` from `lsblk -f`; after editing run `findmnt --verify`, then `sudo mount -a` before rebooting `[docs]`.
@@ -382,7 +400,7 @@ From the packaged files under `/usr/share/omarchy`, read-only `[verified: arch-l
 | **Direct `pacman -Syu` is blocked** | A pacman hook aborts it with "Woah partner". Deliberate bypass: `sudo env OMARCHY_ALLOW_DIRECT_PACMAN=1 pacman -Syu` |
 | Snapshots | `omarchy snapshot create` / `restore` (snapper + `limine-snapper-restore`); root only, kept to 5, no timeline |
 | Packages | `omarchy pkg add <pkg>`, `omarchy pkg drop <pkg>`, `omarchy pkg aur add <pkg>`, `omarchy pkg install` (TUI) |
-| Reset to defaults | `omarchy refresh config <path-under-~/.config>` (backs yours up as `.bak.<ts>`), `omarchy refresh <hyprland, limine, pacman, shell, or tmux>`, `omarchy reinstall` (⚠ overwrites your config changes) |
+| Reset to defaults | `omarchy refresh config <path-under-~/.config>` (backs yours up as `.bak.<ts>`), `omarchy refresh <hyprland, limine, pacman, shell, or tmux>`, `omarchy reinstall` (⚠ overwrites your config changes). ⚠ `omarchy refresh pacman` overwrites `/etc/pacman.conf` and the mirrorlist with the channel defaults (`.bak` copies kept), then updates all packages |
 | Migrations | `omarchy migrate --pending`; state in `~/.local/state/omarchy/migrations` |
 | Defaults live | `/usr/share/omarchy/{default,config,themes,bin}`; your overrides in `~/.config/hypr/*.lua` and `~/.config/omarchy/` (hooks: `hooks/<name>.d/`) |
 | Bash defaults | `/usr/share/omarchy/default/bash/` (aliases, functions, envs, init: mise, starship, zoxide, fzf), sourced from `~/.bashrc`; override *after* the source line |

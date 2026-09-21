@@ -9,7 +9,7 @@ data. Opinionated, terse, copy-pasteable. Placeholders: `<pool>`, `<dataset>`,
 | Release | Status |
 |---|---|
 | **TrueNAS 25.10 "Goldeye"** (SCALE lineage, Debian/Linux) | Current stable, recommended for general use. Latest point release **25.10.7** (2026-09-02). Kernel 6.12 LTS, OpenZFS 2.3.x. |
-| 25.04 "Fangtooth" | Previous stable; last release 25.04.2.6 (2025-10-30). |
+| 25.04 "Fangtooth" | Maintenance; last release 25.04.2.6 (2025-10-30). |
 | **TrueNAS 26** | **Beta** (26-BETA.3, 2026-08-20). OpenZFS 2.4.3, kernel 6.18; the REST API is removed (WebSocket API only). Annual cadence. Do not use for real data. |
 | **TrueNAS CORE** (FreeBSD) | **Legacy, end of the line**: 13.0-U6.8 (2025-07-14), 13.3-U1.2 (2025-04-29). "No longer under active development." Jails, plugins and VMs are marked obsolete (iocage has unfixable vulnerabilities). Migration to SCALE is one-way. |
 
@@ -35,7 +35,7 @@ UI: the version is shown on the dashboard and under System > Update. Names: 22.1
 ### It is an appliance: what NOT to do
 
 - **Do not** `apt install`, `pip install`, or `pkg install` on the host `[SCALE][CORE]`. Updates create a new boot environment and carry forward *core configuration only*: other host changes do not carry forward `[docs]`. Package changes can also break the middleware. Run extra software as an **App** (SCALE) instead.
-- **Do not** create or reshape pools with `zpool`/`zfs` on the CLI: the middleware (which owns the config database) will not know. Use the UI; if you must use the CLI, export and re-import the pool in the UI afterwards `[docs: TrueNAS community guidance]`.
+- **Do not** create or reshape pools with `zpool`/`zfs` on the CLI: the middleware (which owns the config database) will not know. Use the UI; if you must use the CLI, export and re-import the pool in the UI afterwards `[unverified: community threads only]`.
 - **Do not** touch the **boot pool** (`boot-pool`): no datasets, no manual `zpool upgrade` `[unverified: community reports of breakage]`. Manage it in System > Boot (attach a mirror, scrub, boot environments).
 - **Do not** work as root casually. Fresh installs use `truenas_admin`; root is deprecated and can be disabled. Enable sudo for the admin user only while needed `[docs]`.
 - **Do not** import a pool on two systems at once, or use `-f` on import unless you are certain the other system is off.
@@ -53,10 +53,10 @@ UI: the version is shown on the dashboard and under System > Update. Names: 22.1
 | 4 | Create the pool (mirror/RAIDZ2 layout you can live with; RAIDZ can be extended a disk at a time in 25.10). Leave the boot device alone; add a second boot device as a mirror | Storage > Create Pool; System > Boot |
 | 5 | Datasets per purpose (one per share/app/user) with the right preset; never share the pool root | Datasets |
 | 6 | Alert email so failures reach you | System > Alert Settings / Email |
-| 7 | Data protection: periodic snapshots, scrub schedule (weekly by default), replication or cloud sync, an SMART/health plan (section 6) | Data Protection |
-| 8 | **Export the system config** and store it off the box | System > Advanced > Manage Configuration (older releases: System > General) |
+| 7 | Data protection: periodic snapshots, scrub schedule (the default task is scheduled weekly, Sunday 00:00, but only runs if the last scrub is older than the 35-day threshold, so effectively about every 5 weeks: check Scrub Tasks), replication or cloud sync, an SMART/health plan (section 6) | Data Protection |
+| 8 | **Export the system config** and store it off the box | System > Advanced Settings > Manage Configuration (older releases: System > General) |
 | 9 | UPS if you have one | System > Services > UPS |
-| 10 | Update Profile (Conservative vs Early adopter) and confirm the current release is the recommended one | System > Update |
+| 10 | Update Profile (General for most users vs Early Adopter; Developer and Mission Critical also exist) and confirm the current release is the recommended one | System > Update |
 
 ## 2. Packages
 
@@ -75,23 +75,22 @@ An appliance has **no host package management for you**. Substitutes:
 Manage services in **System > Services** (start/stop, and the *Start Automatically* toggle) `[docs]`. Shares, apps, and tasks also have their own screens.
 
 ```bash
-# [docs: CLI namespaces from the TrueNAS CLI reference; exact verbs unverified]
-cli                                  # TrueNAS CLI (interactive). Namespaces include: service, storage, system, task, app, network, sharing
-cli -c 'service query'               # [unverified: -c one-shot form]
-# [unverified] the same via the API client
+# [unverified: method name not checked against the API docs] middleware client, run locally over SSH
 midclt call service.query
 ```
 
+The interactive `cli` is legacy/experimental (the 24.04 CLI reference says not recommended, no further updates) `[unverified for 25.10]`: use the UI or `midclt`.
+
 - `[SCALE]` the host is Debian/systemd: `systemctl status <unit>` and `journalctl -u <unit>` are fine for **looking** (use `sudo` as `truenas_admin`); do not `enable/disable/edit` host units by hand: the middleware owns them.
 - `[CORE]` FreeBSD rc.d: `service <name> status` `[unverified]`; same rule: use the UI.
-- **Scheduled work**: Data Protection (snapshot, replication, cloud sync, scrub, rsync tasks) and System > Advanced > Cron Jobs / Init-Shutdown Scripts. In 25.10 the built-in SMART test scheduler was removed and existing tests were converted to **cron tasks**: verify they still exist (section 6) `[docs]`.
-- **Boot troubleshooting**: pick an older boot environment from the boot menu, or use the local console's setup menu (also reachable over SSH as an admin user; the CLI reference says option 6 opens the CLI) `[docs]`. A working previous boot environment is your first recovery step.
+- **Scheduled work**: Data Protection (snapshot, replication, cloud sync, scrub, rsync tasks) and System > Advanced Settings > Cron Jobs / Init-Shutdown Scripts. In 25.10 the built-in SMART test scheduler was removed and existing tests were converted to **cron tasks**: verify they still exist (section 6) `[docs]`.
+- **Boot troubleshooting**: pick an older boot environment from the boot menu, or use the local console's setup menu (also reachable over SSH as an admin user `[unverified]`) `[docs]`. A working previous boot environment is your first recovery step.
 
 ## 4. Logs & diagnostics
 
 - UI: the **alert bell**, **Jobs** (task manager icon), Dashboard/Reporting for CPU/RAM/disk/network, System > Audit `[unverified: audit menu name]`.
 - `[SCALE]` `/var/log/middlewared.log` (API and config changes) and `/var/log/messages` `[docs: community/docs mention both]`; `journalctl -b -p err` `[unverified on the appliance]`. `[CORE]` `/var/log/messages`, `dmesg`.
-- Logs live on the **system dataset**; if it sits on the boot pool it eats boot space `[unverified]`. Choose its pool in System > Advanced > Storage.
+- Logs live on the **system dataset**; if it sits on the boot pool it eats boot space `[unverified]`. Choose its pool in System > Advanced Settings > Storage.
 
 ```bash
 # [docs] read-only diagnostics (SCALE: prefix sudo as truenas_admin; CORE: root shell)
@@ -99,13 +98,13 @@ zpool status -x                          # only pools with problems ("all pools 
 zpool status -v <pool>                   # full detail + files with permanent errors (-v)
 zpool list -v                            # size, alloc, free, FRAG, CAP, HEALTH per vdev
 zpool iostat -v <pool> 5                 # live per-disk I/O every 5 s
-zfs list -o space -r <pool>              # where space goes: data, snapshots, children, reservations [unverified: "space" preset]
+zfs list -o space -r <pool>              # where space goes: data, snapshots, children, reservations [docs]
 zfs list -t snapshot -r <pool> -o name,used,refer -s used     # biggest snapshots last
 arc_summary                              # ARC size/hit ratio [unverified: ships with ZFS tools]
 smartctl -a /dev/<disk>                  # SMART health [docs: smartmontools binaries are still shipped in 25.10]
 ```
 
-- **Port owner**: `[SCALE]` `sudo ss -tulpn` `[verified: arch-local: ss syntax]`. `[CORE]` `sockstat -4 -l` `[unverified]`.
+- **Port owner**: `[SCALE]` `sudo ss -tulpn` (syntax checked on Arch). `[CORE]` `sockstat -4 -l` `[unverified]`.
 - **Disk hogs**: usually snapshots, not files. Check `zfs list -o space` before deleting data.
 - **ARC** (ZFS read cache) using most of your RAM is normal and by design: judge by hit ratio and by whether apps swap, not by "RAM used".
 
@@ -177,14 +176,14 @@ zfs send <pool>/<dataset>@<snap> | zfs receive -nv <backuppool>/<dataset>   # dr
 **Scrub, resilver, health**
 
 ```bash
-# [docs] zpool-scrub man page; TrueNAS also schedules scrubs (weekly by default) in Data Protection > Scrub Tasks
+# [docs] zpool-scrub man page; TrueNAS also schedules scrubs in Data Protection > Scrub Tasks (weekly Sunday 00:00, but only runs past the 35-day threshold: effectively ~every 5 weeks)
 zpool scrub <pool>            # start; zpool scrub -p <pool> pause; zpool scrub -s <pool> stop
 zpool status <pool>           # shows progress, repaired bytes, errors
 ```
 
 Scrub reads and verifies every block and repairs from redundancy. A scrub and a resilver can't run at once. Run **Scrub Now** from Storage > (pool) Storage Health. **Boot pool** scrub interval is 7 days by default. A pool at `CAP` over about 80% gets slow and fragmented; over 90% is an emergency `[unverified: rule of thumb]`.
 
-**SMART**: 25.10 removed the SMART scheduling UI; old tests were converted to cron tasks and SMART polling continues in the middleware. Verify tests still run (System > Advanced > Cron Jobs), or run the **Scrutiny** app for monitoring `[docs]`. Manual: `smartctl -H /dev/<disk>`, `smartctl -t short /dev/<disk>`, `smartctl -a /dev/<disk>` `[docs]`. `[CORE]` Data Protection > S.M.A.R.T. Tests still exists.
+**SMART**: 25.10 removed the SMART scheduling UI; old tests were converted to cron tasks and SMART polling continues in the middleware. Verify tests still run (System > Advanced Settings > Cron Jobs), or run the **Scrutiny** app for monitoring `[docs]`. Manual: `smartctl -H /dev/<disk>`, `smartctl -t short /dev/<disk>`, `smartctl -a /dev/<disk>` `[docs]`. `[CORE]` Data Protection > S.M.A.R.T. Tests still exists.
 
 **Import / export** `[docs: zpool-import man page]`. In the UI: Storage > Import Pool / Export-Disconnect (⚠ "destroy data" option is on that dialog).
 
@@ -192,6 +191,7 @@ Scrub reads and verifies every block and repairs from redundancy. A scrub and a 
 # [docs] read-only ways to look at a pool from the CLI
 zpool import                              # LIST importable pools only; changes nothing
 zpool import -o readonly=on -R /mnt/alt <pool>   # inspect a pool read-only under an alternate root
+zpool export <pool>                       # then export it again, or it stays imported behind the middleware's back
 zpool import -F -n <pool>                 # dry run: could a damaged pool be recovered?
 # ⚠ zpool import -f <pool> forces import of a pool that looks in use elsewhere: only if that system is off.
 # Do real imports/exports in the UI so the middleware records them.
@@ -203,8 +203,8 @@ zpool import -F -n <pool>                 # dry run: could a damaged pool be rec
 2. Storage Dashboard > **View VDEVs** > select the disk > **Offline** (if it fails, run a scrub first and retry).
 3. Physically swap it. The new disk must be the **same size or larger** and not part of another pool. Prefer a disk of the same type (avoid SMR for pools).
 4. Select the old disk > **Replace** > pick the new one > confirm (TrueNAS wipes it; *Force* only if it holds data you want erased). Resilver starts.
-5. Watch `zpool status <pool>` until resilver finishes with 0 errors, then `zpool clear <pool>` only if leftover error counters are stale, then run a scrub.
-6. With a hot spare: the spare is already resilvering; detach the failed disk afterwards to avoid a second resilver `[docs]`.
+5. Watch `zpool status <pool>` until resilver finishes with 0 errors, then `zpool clear <pool>` only if leftover error counters are stale `[unverified: not in the TrueNAS docs]`, then run a scrub.
+6. With a hot spare `[docs]`, follow this order instead of steps 3 and 4: **Offline** the failed disk, physically remove it, then **Detach** the failed disk (this promotes the spare to a permanent member), then recreate the spare vdev. Skipping the Detach causes a second resilver.
 
 Don't use `zpool replace` on the CLI on TrueNAS unless directed: the UI partitions disks and records device identity the CLI won't `[unverified]`.
 
@@ -233,7 +233,7 @@ nfs4xdr_getfacl /mnt/<pool>/<dataset>    # NFSv4 ACL datasets [SCALE]
 **Before** `[docs]`:
 
 1. Read the release's version notes (breaking changes). 25.10 examples: AD idmap backend, SMB share presets, NVIDIA driver (Turing+ only), SMART UI removal, Certificate Authority creation removed.
-2. **Export the config** (System > Advanced > Manage Configuration) and store it off-box.
+2. **Export the config** (System > Advanced Settings > Manage Configuration) and store it off-box.
 3. `zpool status -x` healthy; no scrub or resilver running; snapshots and a real backup exist; UPS is healthy.
 4. Do **not** click *Upgrade* on pool feature flags yet.
 5. Choose the Update Profile; stay on the recommended stable train (25.10.x). Move one major release at a time `[unverified]`.
@@ -291,20 +291,20 @@ sudo ss -tulpn
 | Replication Tasks | ZFS send/receive to another pool/box (local or SSH). ⚠ *Destroy stale snapshots on destination* and `-F`-style options delete data: check direction and target |
 | Cloud Sync / TrueCloud Backup | File-level copies to object storage / cloud providers |
 | Rsync Tasks | Legacy/other rsync targets |
-| Config export | System > Advanced > Manage Configuration (include the password secret seed) |
+| Config export | System > Advanced Settings > Manage Configuration (include the password secret seed) |
 
 **Restore drill** (do it before you need it): quarterly, restore one dataset from a replica or a snapshot to a scratch dataset (`zfs clone` or `.zfs/snapshot/`), and verify contents. Test the config-restore path on a spare/VM.
 
-**Recovery**: (1) OS dead: reinstall TrueNAS on a new boot device (the boot pool holds no user data), **Storage > Import Pool**, upload the saved config. (2) Encrypted datasets need their keys/passphrases: store them off-box `[docs]`. (3) Pool refuses to import: `zpool import` (list) and read the status; try `-o readonly=on -R /mnt/alt`, and only then a `-F -n` dry run `[docs]`; ask for help before anything destructive. (4) **UI unreachable**: console setup menu to reset the network; roll back to the previous boot environment from the boot menu.
+**Recovery**: (1) OS dead: reinstall TrueNAS on a new boot device (the boot pool holds no user data), then upload the saved config (System > Advanced Settings > Manage Configuration) and import the pool via Storage > Import Pool if it is not picked up `[unverified: menu path and order]`. (2) Encrypted datasets need their keys/passphrases: store them off-box `[docs]`. (3) Pool refuses to import: `zpool import` (list) and read the status; try `-o readonly=on -R /mnt/alt` (then `zpool export <pool>`), and only then a `-F -n` dry run `[docs]`; ask for help before anything destructive. (4) **UI unreachable**: console setup menu to reset the network; roll back to the previous boot environment from the boot menu.
 
 ## 13. Developer-environment notes
 
-- **Shell/CLI** `[docs]`: SSH in as the admin user; the **TrueNAS CLI** starts with `cli` (`ls`, `man <cmd>`, `..`, `/`, `--` for the interactive editor; commands are lowercase), also via the UI Shell and the console menu. API: `midclt call <method> [args]` runs middleware calls locally (`midclt call pool.query` lists pools `[docs]`); remote access is the WebSocket API (REST is removed in 26, migrate now).
+- **Shell/API** `[docs]`: SSH in as the admin user (the interactive `cli` is legacy: section 3). API: `midclt call <method> [args]` runs middleware calls locally (`midclt call pool.query` lists pools `[docs]`); remote access is the WebSocket API (REST is removed in 26, migrate now).
 - **Apps** `[SCALE][docs]`: Docker-based (Kubernetes is gone). Choose an apps pool first. Catalog apps, or Apps > Discover > *Install via YAML* for your own Compose file (name lowercase alphanumeric; TrueNAS validates YAML syntax only, not your config). Storage: **ixVolumes** (TrueNAS creates a dataset) or **host paths** bind-mounted from your datasets. Host paths need the container's UID/GID to have ACL access. Apps upgrade from Apps > Installed. Use an external registry mirror if needed (25.10).
 - **VMs** `[SCALE]`: Virtualization menu; TrueNAS 25.10 adds Secure Boot/TPM and disk import/export `[docs]`.
 - **Jails/plugins** `[CORE]`: run on `iocage`; documented as **obsolete** with known, unfixable vulnerabilities after FreeBSD 13.2 EOL. Plan a move off; don't expose them.
 - **Userland**: `[SCALE]` GNU/Debian (`sed -i`, `stat -c`, `date -d`). `[CORE]` FreeBSD/BSD (`sed -i ''`, `stat -f`, `date -v`, `sockstat`, `gpart`, `camcontrol devlist`, `geom disk list`): scripts that ran on SCALE break here.
-- **Clipboard/open**: N/A on the appliance (no desktop). From your workstation: `ssh nas 'zpool status -x' | pbcopy` (macOS) or `| wl-copy` (Wayland) `[verified: arch-local: wl-copy exists]`.
+- **Clipboard/open**: N/A on the appliance (no desktop). From your workstation: `ssh nas 'zpool status -x' | pbcopy` (macOS) or `| wl-copy` (Wayland) (syntax checked on Arch).
 - Don't develop on the NAS. Keep infra-as-code (Compose files, API scripts, replication task JSON) in git elsewhere.
 
 ## 14. Gotchas / things that bite
@@ -312,7 +312,7 @@ sudo ss -tulpn
 | Trap | Fix |
 |---|---|
 | `apt install`/`pip install` on SCALE, gone after the next update | Don't. Run software as an App; only boot-environment *core config* is carried forward. |
-| Pool changed with `zpool` CLI and the UI doesn't know | Export it and re-import via UI; use the UI for pool changes. |
+| Pool changed with `zpool` CLI and the UI doesn't know | Export it and re-import via UI; use the UI for pool changes `[unverified]`. |
 | Pool imported on two systems (or `import -f` while the other is up) | Corruption risk. Never. Power one off first. |
 | Pool **degraded** | Don't reboot repeatedly. `zpool status -v`, check the other disks' SMART, replace via UI (section 6). RAIDZ1 with big disks: a second failure loses the pool. |
 | Pool **full** (near 100%): can't write, even delete fails | Destroy snapshots (dry run first), free a reservation you kept as a buffer, then keep usage under about 80%. |
@@ -325,7 +325,7 @@ sudo ss -tulpn
 | Replication `-F`/"destroy stale snapshots" deleted the backup | Check source/destination; test on a scratch dataset first. |
 | Network edit locked you out of the UI | Use **Test Changes** (60 s auto-revert); console setup menu resets it. |
 | Boot USB dies | Mirror the boot device; keep a fresh config export. |
-| SMART tests silently gone in 25.10 | They became cron tasks: check System > Advanced > Cron Jobs, or use Scrutiny. |
+| SMART tests silently gone in 25.10 | They became cron tasks: check System > Advanced Settings > Cron Jobs, or use Scrutiny. |
 | App can't write its host path | Container UID/GID lacks ACL on the dataset; fix ACL, not `chmod 777`. |
 | Pulled the wrong disk | Identify by **serial number** (Storage > Disks) before touching hardware. |
 | Running CORE jails/plugins | Obsolete with unfixable iocage vulnerabilities: migrate to SCALE apps. |

@@ -20,7 +20,7 @@ Apple's man-page mirror may lag the OS: when a flag misbehaves, trust `man <cmd>
 | `⚠` | Destructive or hard to undo. The safe variant (list / dry-run) comes first. |
 | `sudo` | Shown explicitly; a bare command needs no privilege. |
 | `[docs]` | From Apple man pages (via the community mirror keith.github.io/xcode-man-pages), Apple support/developer pages, or docs.brew.sh, which I read. **None of these commands were run on a Mac**; the author's reference machine is Arch. |
-| `[verified: arch-local]` | Ran on an Arch machine. Used only for cross-platform tools (ssh, gpg). |
+| `(syntax checked on Arch)` | Flags confirmed via `--help`/`man` on an Arch machine, for cross-platform tools (ssh, gpg). Not run on a Mac. |
 | `[unverified]` | Believed correct, could not confirm from a doc. Check first. |
 
 Every code block starts with a tag comment.
@@ -247,7 +247,7 @@ security list-keychains; security find-identity -v -p codesigning
 - **Users**: admin vs standard; create daily-driver as admin only if you need it. `dscl . -list /Users` `[unverified]`; `id`, `groups`. **umask** default `022` (`umask`). ACLs: `ls -le`, `chmod +a` (macOS ACL syntax, not POSIX `setfacl`) `[unverified]`.
 - **sudo**: `sudo -v` refreshes the timestamp. Touch ID for sudo: section 1. Edit sudoers only with `sudo visudo` (drop-ins in `/etc/sudoers.d/`).
 - **SSH agent**: `ssh-add -l`, `ssh-add --apple-use-keychain <key>` `[docs]`; `-D` removes all identities. Legacy `-K`/`-A` flags are deprecated in favour of `--apple-use-keychain` / `--apple-load-keychain`.
-- **gpg**: `brew install gnupg`; `gpg --list-secret-keys --keyid-format long` `[verified: arch-local: gpg syntax]`.
+- **gpg**: `brew install gnupg`; `gpg --list-secret-keys --keyid-format long` (syntax checked on Arch).
 - **Never** put secrets in dotfiles or shell history; use the keychain, `1Password`/`op`-style CLIs, `age`, or `sops`.
 
 ## 8. Updates & upgrade strategy
@@ -274,7 +274,7 @@ diskutil apfs list | head -40
 ```
 
 1. `brew cleanup -s`, `brew autoremove` (after the dry runs).
-2. Local snapshots: `sudo tmutil deletelocalsnapshots <date>` ⚠ (date from `listlocalsnapshots`); they also age out on their own.
+2. Local snapshots: `sudo tmutil deletelocalsnapshots <date>` ⚠ (`<date>` is `YYYY-MM-DD-HHMMSS` as printed by `listlocalsnapshots`, or a mount point); they also age out on their own.
 3. Xcode/simulators: `xcrun simctl delete unavailable` `[unverified]`; `~/Library/Developer/Xcode/DerivedData` is a cache.
 4. Docker Desktop / OrbStack VM disk: `docker system df`, `docker system prune` ⚠.
 5. `~/Library/Caches` (per-app caches; quit apps first). `~/Library/Application Support` holds real data: do not sweep it.
@@ -308,7 +308,7 @@ lsof -i -sTCP:LISTEN -n -P                                     # everything list
 launchctl print-disabled gui/$(id -u); ls ~/Library/LaunchAgents /Library/LaunchAgents /Library/LaunchDaemons   # what starts at login/boot
 ```
 
-- **Gatekeeper / quarantine** `[docs]`: downloaded files carry `com.apple.quarantine`. `xattr -l <file>` lists it; `xattr -d com.apple.quarantine <file>` removes it ⚠ only for software you have verified. `spctl --assess -vv <app>` shows why an app is (not) allowed. On macOS 15+ `spctl --add/--remove/--enable/--disable` are deprecated (use configuration profiles); `--global-disable` needs root and is a bad idea. Since Sequoia the Control-click bypass is replaced by Settings > Privacy & Security > "Open Anyway" `[unverified: widely reported]`.
+- **Gatekeeper / quarantine** `[docs]`: downloaded files carry `com.apple.quarantine`. `xattr -l <file>` lists it; `xattr -d com.apple.quarantine <file>` removes it ⚠ only for software you have verified. `spctl --assess -vv <app>` shows why an app is (not) allowed. On macOS 15+ `spctl --add/--remove/--enable/--disable` are deprecated (use configuration profiles); `--global-disable` is deprecated and unsupported since macOS 15 (exit code 4). Since Sequoia the Control-click bypass is replaced by Settings > Privacy & Security > "Open Anyway" `[unverified: widely reported]`.
 - **SIP** `[docs]`: `csrutil status` in normal boot; `csrutil disable|enable` only from Recovery. Leave it on. It blocks writes to `/System`, `/usr` (not `/usr/local`), `/bin`, `/sbin`.
 - **TCC / privacy**: terminals need Full Disk Access to read `~/Library/Mail`, Safari data, etc.; grant it to your terminal app in Settings > Privacy & Security, not to random binaries.
 - **Rosetta/XProtect/MRT**: updated silently via system updates; keep auto-updates on.
@@ -323,7 +323,7 @@ tmutil destinationinfo; tmutil status; tmutil latestbackup; tmutil listbackups
 tmutil startbackup --auto                          # add --block to wait for completion
 tmutil addexclusion -p ~/Code/<proj>/node_modules   # -p = fixed-path exclusion (by path, needs root); without -p it is sticky to the item
 tmutil isexcluded <path>
-tmutil localsnapshot; tmutil listlocalsnapshots /; sudo tmutil deletelocalsnapshots <date>     # ⚠ last one
+tmutil localsnapshot; tmutil listlocalsnapshots /; sudo tmutil deletelocalsnapshots <date>     # ⚠ last one; <date> = YYYY-MM-DD-HHMMSS (or a mount point)
 tmutil verifychecksums <backup-path>                # integrity check of a backup
 sudo tmutil restore <src-in-backup> <dst>            # or use the Time Machine UI / Migration Assistant
 ```
@@ -331,6 +331,7 @@ sudo tmutil restore <src-in-backup> <dst>            # or use the Time Machine U
 - **Also back up**: `~/.ssh`, `~/.gnupg`, `~/Brewfile` (`brew bundle dump`), dotfiles (git), password-manager export, project code (git remotes). Tools like `restic`/`rsync` work as on Linux; note macOS `rsync` is an older version (`rsync --version`), so `brew install rsync` for modern flags `[unverified]`.
 - **Restore drill**: quarterly, restore one folder from Time Machine to a scratch path and diff.
 - **Recovery** `[docs: Apple support, key sequences vary]`: Apple silicon: shut down, then press and hold the power button until startup options appear, choose Options. Recovery gives Disk Utility (First Aid), reinstall macOS, Terminal (`csrutil`, `diskutil`), and restore from Time Machine.
+
 ## 13. Developer-environment notes
 
 - **Shell**: default login shell is **zsh**; `/bin/bash` is still the ancient **3.2** (no associative arrays, no `mapfile`/`readarray`, no `${var,,}`) `[unverified: run /bin/bash --version on your OS]`. Homebrew's bash/zsh come first only if `$(brew --prefix)/bin` is early in `PATH`. Scripts: `#!/usr/bin/env bash`. Terminal.app/iTerm start *login* shells: put PATH setup in `~/.zprofile` (brew) and interactive stuff in `~/.zshrc`.

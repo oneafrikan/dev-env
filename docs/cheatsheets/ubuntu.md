@@ -8,7 +8,7 @@ Opinionated, terse, copy-pasteable.
 | Release | Status |
 |---|---|
 | **26.04 LTS "Resolute Raccoon"** | Current LTS. Released 2026-04-23; 26.04.1 out August 2026; standard support to April 2031. |
-| 24.04 LTS "Noble Numbat" | Supported LTS. Upgrade path to 26.04 opens after 26.04.1 (offer rolled out in stages). |
+| 24.04 LTS "Noble Numbat" | Supported LTS. Upgrade to 26.04: offered from early Sept 2026 (held back for rust-coreutils regressions) `[unverified: that it is live]`; confirm with `do-release-upgrade -c`. `-d` is not the supported path. |
 | 22.04 LTS "Jammy Jellyfish" | Supported LTS (older). |
 | 26.10 "Stonking Stingray" | In development, not released. There is no current interim release; 25.10 is archived. |
 
@@ -132,7 +132,7 @@ systemd, same as any modern distro. `systemctl status|enable --now|restart|edit|
 
 | Ubuntu-specific | Note |
 |---|---|
-| SSH unit is `ssh.service` (and `ssh.socket`), not `sshd` | Socket activation is on: see section 5 |
+| SSH unit is `ssh.service` (and `ssh.socket`); on 26.04 `sshd.service` is an alias | Socket activation is on: see section 5 |
 | `apt-daily.timer`, `apt-daily-upgrade.timer` | Drive `apt update` and unattended-upgrades. `systemctl list-timers 'apt-*'` |
 | cron still present | `crontab -e`, `/etc/cron.d/`. Prefer timers for new jobs |
 | SysV init scripts | 26.04 is the **last** release that supports them: convert to units |
@@ -144,9 +144,13 @@ Boot trouble `[unverified: key sequences vary by firmware]`: hold `Shift` (BIOS)
 ```bash
 # [verified: arch-local] journald flags (identical on Ubuntu)
 journalctl -b -p err; journalctl -u <unit> -f; journalctl -k; journalctl --disk-usage
-sudo journalctl --vacuum-size=500M                       # ⚠ deletes old logs
 ss -tulpn                                                # listeners; sudo shows other users' processes
 sudo ss -ltnp 'sport = :8080'                            # what is using port 8080
+```
+
+```bash
+# [docs] not run
+sudo journalctl --vacuum-size=500M                       # ⚠ deletes old logs
 ```
 
 | File | Content `[docs]` |
@@ -184,7 +188,12 @@ sudo chmod 600 /etc/netplan/*.yaml
 sudo netplan try                 # then: sudo netplan apply
 netplan get; netplan status
 # [verified: arch-local] resolver + routes are the same tools
-ip -br a; ip route; resolvectl status; resolvectl query <name>; sudo resolvectl flush-caches
+ip -br a; ip route; resolvectl status; resolvectl query <name>
+```
+
+```bash
+# [docs] state-changing, not run
+sudo resolvectl flush-caches
 ```
 
 Cloud images: cloud-init regenerates netplan on boot unless disabled (section 13).
@@ -215,7 +224,14 @@ DebianBanner no
 ```bash
 # [docs] validate, then restart; keep a second session open
 sudo sshd -t && sudo systemctl restart ssh.service
-# Port/ListenAddress in sshd_config are IGNORED while ssh.socket is active (Ubuntu 22.10+). To change the port:
+```
+
+Changing the port (optional). Run `sudo ufw allow 2222/tcp` **first**: section 1 enables ufw with only OpenSSH allowed, so a new port is blocked until you open it.
+
+```bash
+# [docs: discourse.ubuntu.com socket-activation post, written for 22.10-23.10] [unverified: behaviour on 24.04+]
+# On 22.10-23.10 Port/ListenAddress in sshd_config are ignored while ssh.socket is active; not confirmed for 24.04+.
+sudo ufw allow 2222/tcp                      # FIRST, before changing the port
 sudo mkdir -p /etc/systemd/system/ssh.socket.d
 printf '[Socket]\nListenStream=\nListenStream=2222\n' | sudo tee /etc/systemd/system/ssh.socket.d/listen.conf
 sudo systemctl daemon-reload && sudo systemctl restart ssh.socket
@@ -368,7 +384,7 @@ Back up: `/etc`, `/home`, `/var/lib/<app>` (databases via their dump tool), `~/.
 | "Could not get lock /var/lib/dpkg/lock-frontend" | unattended-upgrades or another apt is running; wait or `systemctl list-timers 'apt-*'`. Do not delete lock files. |
 | `apt-key` command missing on 26.04 | Put keys in `/etc/apt/keyrings/` and reference with `Signed-By:` in a deb822 `.sources` file. |
 | PPA blocks `do-release-upgrade` or swaps libc/mesa | `ppa-purge` first (⚠ downgrades), re-add PPAs only if they support the new release. |
-| `Port` in `sshd_config` does nothing | ssh.socket owns the listener: drop-in `ssh.socket.d/listen.conf` (section 5). |
+| `Port` in `sshd_config` does nothing | ssh.socket may own the listener (documented for 22.10-23.10; `[unverified]` on 24.04+): drop-in `ssh.socket.d/listen.conf`, and `sudo ufw allow <port>/tcp` first (section 5). |
 | netplan "permissions too open" or bad YAML | `chmod 600`, spaces not tabs, use `netplan try` so a mistake rolls back. |
 | Locked out after `ufw enable` | `ufw allow OpenSSH` **before** enabling. |
 | Docker ports reachable despite ufw deny | Docker writes its own chains; bind `127.0.0.1` or use a ufw-docker ruleset. |

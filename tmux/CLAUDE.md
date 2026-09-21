@@ -2,7 +2,8 @@
 
 ## Purpose
 
-tmux configuration. Symlinked to ~/.tmux.conf by bootstrap.sh.
+tmux configuration. Symlinked to ~/.tmux.conf by bootstrap.sh, except when
+${XDG_CONFIG_HOME:-$HOME/.config}/tmux/tmux.conf already exists: then ~/.tmux.conf is not created.
 
 ## Conventions
 

@@ -2,11 +2,13 @@
 
 ## Purpose
 
-zsh functions and aliases. Sourced from ~/.zshrc by bootstrap.sh.
+zsh functions and aliases. bootstrap.sh wires them into the shell rc: macOS writes ~/.zshrc
+(sources functions.zsh and aliases.zsh); Linux writes ~/.zshrc if the login shell is zsh, else
+~/.bashrc, and sources only functions.zsh (no aliases, which would override the distro's own).
 
 ## Conventions
 
-- Source order: functions.zsh first (defines DEV_ENV), then aliases.zsh
+- Source order: functions.zsh first (sets DEV_ENV from its own location: the parent of `shell/`), then aliases.zsh (macOS only)
 - functions.zsh must be sourced, not executed
 - `ctx` has zsh tab completion, dynamically discovered from `contexts/*.sh`
 

@@ -72,6 +72,10 @@ Runs on macOS, Ubuntu and Arch (Omarchy: bash + Hyprland + foot). Assume nothing
 - Verification: only the OS you're running on can be tested. State which OS a change was run on,
   and say plainly what was only read or reasoned about, not run.
 
+On branch `portable-arch`, before running or changing bootstrap, read `docs/PORTABILITY.md` and
+`docs/TESTING-PORTABLE-ARCH.md`.
+(Delete this pointer once the branch is merged.)
+
 ## iTerm2 per-machine profiles
 
 `scripts/iterm2-profiles/` — gives each machine an iTerm2 Dynamic Profile with

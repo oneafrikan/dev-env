@@ -57,8 +57,25 @@ That installs your tools, symlinks dotfiles, and wires your shell rc. It picks
 the platform itself — macOS (Homebrew + `Brewfile`), Ubuntu (apt + mise) or Arch
 (pacman/yay + mise) — and on Linux skips GUI apps when there's no desktop
 session. Preview any run first with `bash ~/.dev-env/bootstrap.sh --dry-run`
-(prints every action, changes nothing). Overrides for odd setups:
-`DEV_ENV_OS=darwin|ubuntu|arch`, `DEV_ENV_HEADLESS=0|1`. Then:
+(prints every action, changes nothing).
+
+- `--dry-run` — print every action as `would: ...`, change nothing.
+- `--with-cursor` (or `DEV_ENV_WITH_CURSOR=1`) — Linux desktop only: also install
+  Cursor (opt-in; on Ubuntu it only prints a pointer to the .deb; macOS gets the
+  cask from the `Brewfile` regardless).
+- `DEV_ENV_OS=darwin|ubuntu|arch` — force the platform.
+- `DEV_ENV_HEADLESS=0|1` — force desktop/headless on Linux. Set `1` on servers: an
+  SSH session with X forwarding sets `DISPLAY` and looks like a desktop.
+
+On Linux the CLI tools come from mise at the versions pinned in
+`config/mise.toml`, only those not already on `PATH`, recorded in a generated
+`~/.config/mise/conf.d/dev-env.toml` (your own mise config is never touched; a
+file there without the generated header is left alone).
+The shell rc block goes into `~/.bashrc` (`~/.zshrc` if zsh is your login shell)
+and sources `functions.zsh` only: no aliases, no `mise activate`. macOS keeps
+`~/.zshrc` with functions and aliases. `ctx` contexts are not ported to Linux yet.
+More: [docs/PORTABILITY.md](docs/PORTABILITY.md) (how it works) and
+[docs/TESTING-PORTABLE-ARCH.md](docs/TESTING-PORTABLE-ARCH.md) (branch test guide). Then:
 
 ```bash
 llm keys set anthropic     # set your Anthropic API key
@@ -121,6 +138,8 @@ been two separate git histories from the start.
   lib/                      ← shared bash utilities (platform.sh)
   __prompts/                ← the original AI prompt that built this repo
   bootstrap.sh              ← one-shot new-machine setup
+  bootstrap/, packages/, config/mise.toml  ← per-platform installers, package lists, pinned mise tools
+  docs/                     ← PORTABILITY.md, TESTING-PORTABLE-ARCH.md
   Justfile                  ← task runner
   CLAUDE.md                 ← full project context for AI coding agents
 ```

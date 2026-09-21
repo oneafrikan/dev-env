@@ -2,7 +2,6 @@
 # One per line; `#` starts a comment. Installed with `pacman -S --needed`.
 git      # not in mise registry; needed to clone TPM
 tmux     # kept native: tmux.conf + TPM expect a distro tmux
-zsh      # dev-env shell files are .zsh; optional login shell
 wget
 htop
 tree

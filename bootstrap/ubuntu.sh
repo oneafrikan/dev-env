@@ -26,9 +26,10 @@ platform_ensure_mise() {
   # signed, and upgraded by apt afterwards; preferred over curl|sh.
   local key=/etc/apt/keyrings/mise-archive-keyring.gpg
   local list=/etc/apt/sources.list.d/mise.list
-  if [[ ! -f "$list" ]]; then
+  # Re-run repairs a missing/empty key too, not just a missing mise.list.
+  if [[ ! -f "$list" || ! -s "$key" ]]; then
     run sudo install -dm 755 /etc/apt/keyrings
-    run bash -c "wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | sudo tee $key >/dev/null"
+    run bash -c "set -o pipefail; wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | sudo tee $key >/dev/null"
     run bash -c "echo \"deb [signed-by=$key arch=\$(dpkg --print-architecture)] https://mise.jdx.dev/deb stable main\" | sudo tee $list >/dev/null"
   fi
   run sudo apt-get update
@@ -45,7 +46,9 @@ platform_desktop() {
   else
     warn "snap not found — install Obsidian manually (no apt package)"
   fi
-  # Cursor has no apt package or snap; the git template needs it (see the
-  # editor warning further down). Not automated: it's a vendor .deb download.
-  warn "Cursor is not installed automatically — get the .deb from cursor.com if you want it"
+  # Cursor is opt-in and has no apt package or snap: a vendor .deb download,
+  # so --with-cursor can only point at it, not install it.
+  if [[ "$WITH_CURSOR" == 1 ]]; then
+    warn "--with-cursor: Cursor can't be installed automatically on Ubuntu — get the .deb from cursor.com"
+  fi
 }

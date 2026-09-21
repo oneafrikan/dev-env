@@ -28,14 +28,17 @@ platform_ensure_mise() {
 # Desktop only — bootstrap.sh skips this when headless.
 platform_desktop() {
   log "Installing desktop apps (packages/aur.txt)..."
-  if ! command -v yay &>/dev/null; then
-    warn "yay not found — skipping desktop apps: $(pkgs_from "$DEV_ENV/packages/aur.txt" | tr '\n' ' ')"
-    return 0
-  fi
   local pkgs
   pkgs="$(pkgs_from "$DEV_ENV/packages/aur.txt" | tr '\n' ' ')"
+  # Cursor is opt-in (--with-cursor / DEV_ENV_WITH_CURSOR=1), not in aur.txt.
+  [[ "$WITH_CURSOR" == 1 ]] && pkgs="$pkgs cursor-bin"
+  if ! command -v yay &>/dev/null; then
+    warn "yay not found — skipping desktop apps: $pkgs"
+    return 0
+  fi
   # AUR builds are interactive on purpose (PKGBUILD review); no --noconfirm.
   # shellcheck disable=SC2086
   run yay -S --needed $pkgs
+  [[ "$WITH_CURSOR" == 1 ]] && CURSOR_PLANNED=1   # so the git-editor step knows (dry-run)
   did "desktop apps installed"
 }

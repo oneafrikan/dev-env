@@ -1,40 +1,49 @@
 # ─────────────────────────────────────────────
-# config/mise.toml — cross-platform CLI tools
-# One list for Linux (Ubuntu + Arch); bootstrap.sh symlinks this into
-# ~/.config/mise/conf.d/dev-env.toml and runs `mise install`.
+# config/mise.toml — cross-platform CLI tools, PINNED
+# One list for Linux (Ubuntu + Arch). bootstrap.sh reads the pins below and
+# runs `mise install <tool>@<version>` for each tool whose binary is NOT
+# already on PATH, then records what it installed in a generated
+# ~/.config/mise/conf.d/dev-env.toml. This file itself is never linked into
+# mise, and ~/.config/mise/config.toml is never touched.
+#
+# To bump a tool: `mise latest <tool>` prints the newest version; edit the pin
+# here, then re-run bootstrap.sh. Keep `name = "x.y.z"` lines simple (the
+# script parses them). The one tool whose binary differs from its name is
+# ripgrep (rg); bootstrap.sh knows that.
 #
 # macOS does NOT read this: the Brewfile already provides the same tools and
 # stays the macOS source of truth. Keep the two lists in step by hand.
 #
 # Every name below was checked with `mise registry | grep -i <name>`.
 # Tools mise does not provide live in packages/*.txt (or the Brewfile).
+# Pins current as of 2026-09 (from `mise latest`).
 # ─────────────────────────────────────────────
 [tools]
 # Core
-delta = "latest"      # Brewfile: git-delta (registry name is `delta`)
-gh = "latest"
+delta = "0.19.2"      # Brewfile: git-delta (registry name is `delta`)
+gh = "2.101.0"
 
 # Modern CLI replacements
-eza = "latest"
-bat = "latest"
-ripgrep = "latest"
-fd = "latest"
-zoxide = "latest"
-fzf = "latest"
-btop = "latest"
+eza = "0.23.5"
+bat = "0.26.1"
+ripgrep = "15.2.0"
+fd = "10.5.0"
+zoxide = "0.10.0"
+fzf = "0.74.4"
+btop = "1.4.7"
 
 # Data
-duckdb = "latest"
-jq = "latest"
-yq = "latest"
+duckdb = "1.5.5"
+jq = "1.8.2"
+yq = "4.53.6"
 
 # Security
-gitleaks = "latest"
+gitleaks = "8.30.1"
 
 # Python
-uv = "latest"
+uv = "0.12.17"
 
 # Utilities
-just = "latest"
-direnv = "latest"
-atuin = "latest"
+just = "1.58.0"
+direnv = "2.37.1"
+atuin = "18.22.0"

@@ -1,5 +1,5 @@
 # Arch, DESKTOP ONLY (skipped when headless): GUI apps, the Brewfile's casks.
 # Installed with `yay -S --needed` when yay is present. yay also resolves
 # official-repo and third-party-repo packages, so repo location does not matter.
-cursor-bin   # editor; git/.gitconfig sets core.editor = "cursor --wait"
+# cursor-bin is opt-in, not listed here: bootstrap.sh --with-cursor (or DEV_ENV_WITH_CURSOR=1)
 obsidian     # notes app

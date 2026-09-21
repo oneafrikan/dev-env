@@ -24,8 +24,8 @@ ctx() {
   local name="${1:-}"
   if [[ -z "$name" ]]; then
     echo "Usage: ctx <context>"
-    local available
-    available=$(ls "$DEV_ENV/contexts/"*.sh 2>/dev/null | xargs -n1 basename 2>/dev/null | sed 's/\.sh$//' | tr '\n' ' ')
+    local available  # `command ls`: a user alias (e.g. Omarchy's eza) would otherwise garble this list
+    available=$(command ls "$DEV_ENV/contexts/"*.sh 2>/dev/null | xargs -n1 basename 2>/dev/null | sed 's/\.sh$//' | tr '\n' ' ')
     echo "Available: ${available:-none found — add scripts under $DEV_ENV/contexts/}"
     return 1
   fi

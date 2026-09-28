@@ -203,7 +203,7 @@ breaks every later `apt-get update`; remove it per Rollback R6.
 | 4 | `Installing desktop apps...`, `would: sudo snap install obsidian --classic` (or `⚠ snap not found`). With `--with-cursor`: `⚠ --with-cursor: Cursor can't be installed automatically on Ubuntu` |
 | 5 | TPM clone, `uv tool install` plans, fabric line |
 | 6 | `would: ln -s <REPO>/tmux/.tmux.conf ~/.tmux.conf`; `would: cp <REPO>/git/.gitconfig ~/.gitconfig`; `would: git config --file ~/.gitconfig core.editor ${EDITOR:-vi}` (only when no global git config exists) |
-| 7 | `Wiring shell functions into .bashrc...` then `would: append to ~/.bashrc:` with `export DEV_ENV=...`, the shims `case` line, `source "$DEV_ENV/shell/functions.zsh"` (no aliases, no `mise activate`); or `.bashrc already wired` |
+| 7 | `Wiring shell functions into .bashrc...` then `would: append to ~/.bashrc:` with `export DEV_ENV=...`, the shims and `~/.local/bin` `case` lines, `source "$DEV_ENV/shell/functions.zsh"` (no aliases, no `mise activate`); or `.bashrc already wired` |
 | end | `would: find ... chmod +x`, `would: .../validate-contexts.sh`, `Dry run complete`, Next steps, exit 0 |
 
 **Expected warnings (dry-run)**: `go not installed — skipping fabric` (always);

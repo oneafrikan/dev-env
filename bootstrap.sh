@@ -349,6 +349,9 @@ rc_block() {
     # setup may have one) and no aliases.zsh (it would override the distro's
     # own ls/grep/cat/... aliases).
     echo 'case ":$PATH:" in *":$HOME/.local/share/mise/shims:"*) ;; *) export PATH="$HOME/.local/share/mise/shims:$PATH" ;; esac'
+    # ~/.local/bin (uv tool installs: llm, ttok, ...): same idempotent guard, so
+    # an already-open shell finds them without a re-login.
+    echo 'case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac'
     echo 'source "$DEV_ENV/shell/functions.zsh"'
   else
     echo 'source "$DEV_ENV/shell/functions.zsh"'

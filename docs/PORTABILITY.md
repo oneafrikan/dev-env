@@ -111,7 +111,7 @@ The block is appended once, between `# dev-env: managed block` and `# end dev-en
 | Platform | File | Block contents |
 |---|---|---|
 | macOS | `~/.zshrc` | `export DEV_ENV=...`; `source functions.zsh`; `source aliases.zsh`. Same content as the original macOS bootstrap on `main`. |
-| Linux, login shell not zsh (or `SHELL` unset) | `~/.bashrc` | `export DEV_ENV=...`; a `case` that prepends `~/.local/share/mise/shims` to PATH only if absent; `source functions.zsh`. |
+| Linux, login shell not zsh (or `SHELL` unset) | `~/.bashrc` | `export DEV_ENV=...`; a `case` that prepends `~/.local/share/mise/shims` to PATH only if absent; the same for `~/.local/bin`; `source functions.zsh`. |
 | Linux, login shell zsh | `~/.zshrc` | same Linux block as above |
 
 On Linux the block deliberately has **no aliases** (`aliases.zsh` would replace the

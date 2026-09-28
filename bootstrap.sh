@@ -166,6 +166,9 @@ install_mise_tools() {
   else
     ok "nothing to install — every tool is already on PATH"
   fi
+  # make the new tools visible to the rest of this run (uv, etc.) — before the
+  # early returns below, or a foreign conf.d file would leave uv off PATH
+  export PATH="$HOME/.local/share/mise/shims:$HOME/.local/bin:$PATH"
   # Write the file only after the install, so it never lists a missing tool.
   if [[ -L "$dst" && "$(readlink "$dst")" == "$src" ]]; then
     run rm "$dst"                    # old bootstrap linked the whole repo list here
@@ -186,8 +189,6 @@ install_mise_tools() {
       echo "[tools]"
       printf '%s' "$pins"; } > "$dst"
   fi
-  # make the new tools visible to the rest of this run (uv, etc.)
-  export PATH="$HOME/.local/share/mise/shims:$HOME/.local/bin:$PATH"
   did "mise tools installed and pinned ($dst)"
 }
 if [[ "$PLATFORM" != darwin ]]; then
@@ -222,11 +223,15 @@ try_install() {
 }
 
 log "Installing llm via uv..."
-if ! command -v uv &>/dev/null; then
+# `uv --version`, not just `command -v`: a mise shim exists for every installed
+# tool but errors ("No version is set") when no mise config lists it — e.g. a
+# hand-made conf.d/dev-env.toml that bootstrap left alone. Without this check
+# every `uv tool install` below would fail silently and print "installed".
+if ! uv --version &>/dev/null; then
   if is_dry; then
     warn "uv not on PATH yet — $UV_SRC_HINT would provide it"
   else
-    err "uv not found — was $UV_SRC_HINT successful?"
+    err "uv not found or not usable — was $UV_SRC_HINT successful? (a mise shim for uv fails when no mise config pins it; see any 'not a file this script generated' warning above)"
     exit 1
   fi
 fi

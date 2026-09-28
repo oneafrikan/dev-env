@@ -47,7 +47,7 @@ executed) overrides them.
 
 | Hook | Called | Arch | Ubuntu | macOS |
 |---|---|---|---|---|
-| `platform_packages` | first | `sudo pacman -S --needed --noconfirm` from `packages/pacman.txt` | `sudo apt-get update` + `apt-get install -y` from `packages/apt.txt` | install Homebrew if missing, `brew bundle --file=Brewfile --no-lock` |
+| `platform_packages` | first | `sudo pacman -S --needed --noconfirm` from `packages/pacman.txt` | `sudo apt-get update` + `apt-get install -y` from `packages/apt.txt` | install Homebrew if missing, `brew bundle --file=Brewfile` |
 | `platform_ensure_mise` | after packages | `pacman -S mise` if missing | add mise's apt repo, `apt-get install mise` if missing | no-op message (mise is in the Brewfile) |
 | `platform_desktop` | only when not headless, after the mise tools | `yay -S --needed` from `packages/aur.txt` (+`cursor-bin` with the flag); skipped with a warning if `yay` is missing | `sudo snap install obsidian --classic` (warning if no snap) | not defined (casks come from the Brewfile) |
 | `platform_post_links` | after the `.gitconfig` step | not defined | not defined | link `~/.hammerspoon/init.lua` (backs up a real file to `.bak`); run `scripts/iterm2-profiles/setup.sh` |

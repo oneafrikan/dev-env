@@ -22,7 +22,7 @@ platform_packages() {
 
   # ── 2. Brew bundle ──────────────────────────
   log "Running brew bundle..."
-  run brew bundle --file="$DEV_ENV/Brewfile" --no-lock
+  run brew bundle --file="$DEV_ENV/Brewfile"
   did "Brewfile applied"
 }
 

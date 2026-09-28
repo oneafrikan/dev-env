@@ -118,7 +118,7 @@ section.
 | `main` step | Branch dry-run line | Same? |
 |---|---|---|
 | 1 Homebrew | `✓ Homebrew already installed (...)` or `would: /bin/bash -c "$(curl ... install.sh)"` | same |
-| 2 brew bundle | `would: brew bundle --file=<REPO>/Brewfile --no-lock` | same |
+| 2 brew bundle | `would: brew bundle --file=<REPO>/Brewfile` | same |
 | 3 TPM | `already installed` or `would: git clone .../tpm` | same |
 | 4-6 uv, llm, plugins, companions | `would: uv tool install llm` etc. (dry-run always prints these; a real run treats "already installed" as success) | same |
 | 7 fabric | `⚠ go not installed — skipping fabric` or `would: go install ...` | same |

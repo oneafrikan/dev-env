@@ -161,8 +161,10 @@ section.
 
 ## 3. Ubuntu desktop
 
-**Status: untested on Ubuntu.** Dry-run verified only via forced `DEV_ENV_OS=ubuntu`
-on Arch.
+**Status: desktop real run untested.** Dry-run verified via forced `DEV_ENV_OS=ubuntu`
+on Arch and on Ubuntu 24.04 (`DISPLAY=:0` gives `ubuntu (desktop)`). The shared Linux
+path was run for real on Ubuntu 24.04 headless (section 4); the snap/Obsidian step
+has never run.
 
 **Prerequisites**
 - Ubuntu version noted (LTS expected); `sudo`; network; `git` present to clone (installing it is an install: ask); a desktop session.
@@ -182,7 +184,8 @@ on Arch.
 | U5 | READ-ONLY | Linux verification block (section 1), then the Ubuntu-specific checks below |
 | U6 | C8 | second dry-run, optional second run |
 
-**Ubuntu mise install method: untested.** `bootstrap/ubuntu.sh` adds mise's apt repo
+**Ubuntu mise install method: RAN on Ubuntu 24.04 (Docker, headless; mise 2026.9.15
+installed from the repo, later mise versions/mirrors not checked).** `bootstrap/ubuntu.sh` adds mise's apt repo
 (key `https://mise.jdx.dev/gpg-key.pub` dearmored into
 `/etc/apt/keyrings/mise-archive-keyring.gpg`, source line `deb [signed-by=... arch=...]
 https://mise.jdx.dev/deb stable main`). It was written from mise's older documented
@@ -225,8 +228,8 @@ mise came from the apt repo; Obsidian is present; `git commit` would use `$EDITO
 (only if the template was copied); second run is a no-op (C8).
 
 **Known risks (Ubuntu desktop)**
-- The mise apt repo method (above): untested.
-- The key download is `wget -qO - ... | gpg --dearmor | sudo tee` inside `bash -c` with `set -o pipefail`: a failed download fails the step. Re-running repairs it: the key and source line are redone if `mise.list` is missing or the key file is missing or empty (untested on a real Ubuntu).
+- The mise apt repo method (above): RAN once on Ubuntu 24.04 (headless container); current mise docs may move to a PPA / `extrepo`.
+- The key download is `wget -qO - ... | gpg --dearmor | sudo tee` inside `bash -c` with `set -o pipefail`: a failed download fails the step. Re-running repairs it: the key and source line are redone if `mise.list` is missing or the key file is missing or empty (the first-run key download RAN on Ubuntu 24.04; the repair-on-re-run path is untested).
 - `httpie` / `csvkit` need the `universe` component.
 - `apt-get` can fail on the dpkg lock while `unattended-upgrades` runs: wait and re-run (idempotent).
 - mise downloads the tool binaries (mostly from GitHub releases); a rate limit or blocked network can fail `mise install`. If so, stop and tell the human; do not create or set a token yourself.
@@ -245,7 +248,13 @@ mise came from the apt repo; Obsidian is present; `git commit` would use `$EDITO
 
 ## 4. Ubuntu headless (server)
 
-**Status: untested on Ubuntu.** Same code path as desktop minus desktop apps.
+**Status: RAN on Ubuntu 24.04 in Docker (2026-09-28, fresh `ubuntu:24.04` + sudo, non-root user, headless auto-detected).**
+Same code path as desktop minus desktop apps. RAN: dry-run (home unchanged), real run (exit 0,
+mise from apt, 17 tools, `mise ls` no `(missing)`), second real run (no-op: `.bashrc`, `.gitconfig`,
+`conf.d/dev-env.toml` and every other home file byte-identical), clobber test (seeded `~/.gitconfig`,
+XDG `tmux.conf`, mise `config.toml`, `.zshrc` and a stale rc block: all untouched, stale block
+warned about, not rewritten; a hand-made `conf.d/dev-env.toml` is left alone), `DEV_ENV_HEADLESS`
+and `DISPLAY` detection dry-runs. Not run: `ssh -X`, dpkg lock contention, a real (non-container) host.
 
 **Force headless.** Detection calls a Linux box a desktop if `WAYLAND_DISPLAY`,
 `DISPLAY` or `XDG_CURRENT_DESKTOP` is set, and **SSH with X forwarding sets
@@ -405,10 +414,10 @@ Not bugs to fix during testing; record whether you hit them.
 | 2 | `platform_sed_i` in `lib/platform.sh` is broken (echoes `-i ''`, which word-splits to a literal `''` argument on macOS). Do not use it. |
 | 3 | `macos/` stubs and `scripts/iterm2-profiles/setup.sh` have no Darwin guard (run directly on Linux it exits 1 when there is no `profiles/<hostname -s>.json`, and with one it would create `~/Library/Application Support/iTerm2/DynamicProfiles`). |
 | 4 | Piping the script into bash (`curl` into `bash`) is unsupported. It works only as a fallback when `~/.dev-env` already holds a clone (with a warning); otherwise exit 1. |
-| 5 | Bootstrap is Linux-tested only via `--dry-run` on Arch. Nothing has run for real on macOS or Ubuntu. Not exercised anywhere: the zsh `%x` branch, bash 3.2, the Ubuntu mise apt repo, `uname -s = Darwin` detection. |
+| 5 | Real runs so far: Ubuntu 24.04 headless only (Docker). Dry-run: Arch, and Ubuntu 24.04. Nothing has run for real on macOS, Arch or Ubuntu desktop. The zsh `%x` branch ran on Ubuntu (zsh 5.9), not macOS zsh; bash 3.2 was checked in a `bash:3.2` container (syntax, forced-ubuntu dry-run, sourcing `functions.zsh`), not on macOS. Not exercised anywhere: `uname -s = Darwin` detection. |
 | 6 | The `Brewfile` still installs the `cursor` cask on macOS; Cursor is opt-in only on Linux. |
 | 7 | (fixed) `bootstrap.sh` now exports `DEV_ENV`, so `meta/validate-contexts.sh` checks the clone that ran bootstrap. |
-| 8 | Ubuntu mise apt-repo method is from mise's older docs (current docs: PPA/`extrepo`); the wget-gpg-tee key pipeline now runs with `pipefail` and a re-run repairs a missing or empty key (untested on a real Ubuntu). |
+| 8 | Ubuntu mise apt-repo method works today on 24.04 (RAN, mise 2026.9.15) but comes from mise's older docs (current docs: PPA/`extrepo`); the wget-gpg-tee key pipeline now runs with `pipefail` and a re-run repairs a missing or empty key (first-run key download RAN on Ubuntu 24.04; repair-on-re-run untested). |
 | 9 | An existing rc block written by an older bootstrap is never rewritten (older Linux blocks keep `mise activate` and `aliases.zsh`). |
 | 10 | A regular file at `~/.config/mise/conf.d/dev-env.toml` is overwritten only if it carries the generated header; otherwise left alone with a warning. |
 | 11 | No package list provides `go` (fabric is skipped with a warning), `op` (1Password CLI, but the Next steps say `op signin`) or `supacode`. `nvm` and `pyenv` are macOS-only. |

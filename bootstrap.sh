@@ -34,6 +34,15 @@ done
 # ~/.dev-env if the script location can't be resolved (e.g. piped into bash).
 _src="${BASH_SOURCE[0]:-$0}"   # unset when piped (curl | bash); $0 is then just "bash"
 _here=""
+# Follow symlinks to the real script so a link elsewhere (~/bin/bootstrap ->
+# clone/bootstrap.sh) finds the clone. Plain `readlink` (no -f: macOS lacks it),
+# bash 3.2-safe; bounded so a symlink loop can't hang.
+_n=0
+while [[ -L "$_src" && "$_n" -lt 20 ]]; do
+  _lnk="$(readlink "$_src")"
+  case "$_lnk" in /*) _src="$_lnk" ;; *) _src="$(dirname "$_src")/$_lnk" ;; esac
+  _n=$((_n + 1))
+done
 [[ -f "$_src" ]] && { _here="$(cd "$(dirname "$_src")" 2>/dev/null && pwd)" || _here=""; }
 if [[ -n "$_here" && -d "$_here/bootstrap" ]]; then
   DEV_ENV="$_here"
@@ -45,7 +54,7 @@ else
   echo "    Piping isn't supported — clone first: git clone <repo-url> ~/.dev-env && bash ~/.dev-env/bootstrap.sh" >&2
   exit 1
 fi
-unset _src _here
+unset _src _here _n _lnk
 export DEV_ENV   # children (meta/validate-contexts.sh, bootstrap/*.sh helpers) default to ~/.dev-env otherwise
 
 log()  { echo "  [bootstrap] $1"; }

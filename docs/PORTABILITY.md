@@ -95,7 +95,7 @@ Rules `install_mise_tools` follows:
 | Pinned | Each tool is `name = "x.y.z"` under `[tools]`, one per line (the script parses that shape). |
 | Only if missing | A tool is installed only if its binary is not already on PATH (`command -v`; the one name/binary mismatch is `ripgrep` -> `rg`). Found: prints `SKIP <tool> (already on PATH: ...)`. |
 | Earlier runs stay pinned | If a previous run generated `dev-env.toml` and it lists the tool, the tool stays listed (its shim is on PATH by now). Printed as `INSTALL <tool>@<ver> (pinned by an earlier run; no-op if present)`. |
-| Explicit install | `mise install tool@ver tool@ver ...` for the chosen tools only. **Never a bare `mise install`** (it would process the user's global mise config), no `mise use`, no `mise trust` (the repo file is never linked into mise). |
+| Explicit install | `mise install --quiet tool@ver tool@ver ...` (`--quiet` hides mise's "installed but not activated" warning; the file is written after the install) for the chosen tools only. **Never a bare `mise install`** (it would process the user's global mise config), no `mise use`, no `mise trust` (the repo file is never linked into mise). |
 | Generated file | After the install, `~/.config/mise/conf.d/dev-env.toml` is rewritten on every run: header comment, `[tools]`, the chosen pins. It never lists a tool that failed to install. `mise ls` and `mise config ls` pick it up (checked). |
 | User config untouched | `~/.config/mise/config.toml` is never read or written by the script. |
 | Symlink at that path | Symlink to the repo's `config/mise.toml` (left by an earlier bootstrap): removed and replaced by the generated file. Any other symlink: left alone, warning, tools are installed but not pinned. |

@@ -158,7 +158,11 @@ install_mise_tools() {
     args+=("$tool@$ver"); pins+="$tool = \"$ver\""$'\n'
   done < <(sed -n 's/^\([A-Za-z0-9_:.\/-]*\) *= *"\([^"]*\)".*/\1 \2/p' "$src")
   if (( ${#args[@]} )); then
-    run mise install "${args[@]}"    # explicit tool@version only
+    # --quiet: without it mise warns "installed but not activated" and prints a
+    # `mise use` line per tool, because the conf.d file below is written after
+    # the install (deliberately: it must never list a tool that failed).
+    # Errors still print.
+    run mise install --quiet "${args[@]}"    # explicit tool@version only
   else
     ok "nothing to install — every tool is already on PATH"
   fi

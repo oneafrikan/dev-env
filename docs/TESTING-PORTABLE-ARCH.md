@@ -199,7 +199,7 @@ breaks every later `apt-get update`; remove it per Rollback R6.
 | banner | `platform: ubuntu (desktop)`, `repo: <REPO>`, `DRY RUN — nothing will be changed` |
 | 1 | `would: sudo apt-get update`, `would: sudo apt-get install -y ca-certificates curl wget gpg git tmux htop tree httpie csvkit` |
 | 2 | mise absent: `would: sudo install -dm 755 /etc/apt/keyrings`, a `bash -c` line that fetches `https://mise.jdx.dev/gpg-key.pub` with wget, dearmors it with gpg and writes `/etc/apt/keyrings/mise-archive-keyring.gpg`, a `bash -c` line that writes `deb [signed-by=... arch=...] https://mise.jdx.dev/deb stable main` to `/etc/apt/sources.list.d/mise.list`, `apt-get update`, `apt-get install -y mise`. mise present: only `✓ mise already installed (<version>)`. |
-| 3 | 17 `INSTALL <tool>@<ver>` / `SKIP <tool> (already on PATH: ...)` lines, `would: mise install <tool>@<ver> ...` (only non-skipped tools), `would: mkdir -p ~/.config/mise/conf.d`, `would: write ~/.config/mise/conf.d/dev-env.toml (regenerated each run):` followed by one `<tool> = "<ver>"` line per chosen tool (each shown after a pipe character in the output) |
+| 3 | 17 `INSTALL <tool>@<ver>` / `SKIP <tool> (already on PATH: ...)` lines, `would: mise install --quiet <tool>@<ver> ...` (only non-skipped tools), `would: mkdir -p ~/.config/mise/conf.d`, `would: write ~/.config/mise/conf.d/dev-env.toml (regenerated each run):` followed by one `<tool> = "<ver>"` line per chosen tool (each shown after a pipe character in the output) |
 | 4 | `Installing desktop apps...`, `would: sudo snap install obsidian --classic` (or `⚠ snap not found`). With `--with-cursor`: `⚠ --with-cursor: Cursor can't be installed automatically on Ubuntu` |
 | 5 | TPM clone, `uv tool install` plans, fabric line |
 | 6 | `would: ln -s <REPO>/tmux/.tmux.conf ~/.tmux.conf`; `would: cp <REPO>/git/.gitconfig ~/.gitconfig`; `would: git config --file ~/.gitconfig core.editor ${EDITOR:-vi}` (only when no global git config exists) |
@@ -334,7 +334,7 @@ block** (`grep -n -e 'mise activate' -e 'aliases.zsh' ~/.bashrc ~/.zshrc`) and p
 **Expected dry-run shape (Arch desktop, fresh)**: banner `platform: arch (desktop)`;
 `would: sudo pacman -S --needed --noconfirm git tmux wget htop tree httpie csvkit`;
 `would: sudo pacman -S --needed --noconfirm mise` (or `✓ mise already installed (<version>)`);
-17 `INSTALL`/`SKIP` mise lines, `would: mise install ...`, the `conf.d` write with `| tool = "ver"` lines;
+17 `INSTALL`/`SKIP` mise lines, `would: mise install --quiet ...`, the `conf.d` write with `| tool = "ver"` lines;
 `would: yay -S --needed obsidian` (`... obsidian cursor-bin` with `--with-cursor`; or
 `⚠ yay not found — skipping desktop apps: obsidian`); TPM, uv, tmux/git lines; `.bashrc`
 block; `Dry run complete`. Headless: `Headless — skipping desktop apps`, no `yay`.

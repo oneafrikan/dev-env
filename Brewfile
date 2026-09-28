@@ -44,6 +44,9 @@ brew "uv"
 # Node (for any tooling)
 brew "nvm"
 
+# Go (needed by fabric's `go install`)
+brew "go"
+
 # Automation
 cask "hammerspoon"
 

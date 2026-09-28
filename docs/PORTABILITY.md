@@ -75,8 +75,9 @@ Cursor install so the dry-run git-editor step knows).
 Shared on every platform, in order: tmux plugin manager clone to
 `~/.tmux/plugins/tpm`; `uv tool install` of `llm`, `files-to-prompt`,
 `strip-tags`, `ttok`, plus `llm install llm-anthropic llm-gemini`; `fabric` via
-`go install` only if `go` is already on PATH (no package list provides `go`, so it
-is normally skipped with a warning); tmux and git links (section 7); shell rc
+`go install` only if `go` is already on PATH (the Brewfile and `config/mise.toml`
+now provide `go`, so this is normally a real install, not a skip); tmux and git
+links (section 7); shell rc
 block (section 5); `chmod +x` on every `*.sh` in the clone; `meta/validate-contexts.sh`.
 
 `zsh` is deliberately not in `apt.txt` / `pacman.txt`: on Linux the shell files

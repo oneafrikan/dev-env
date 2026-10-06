@@ -22,6 +22,7 @@ macOS system management utilities. These scripts are macOS-only — they guard w
 |-----------------------|-------------|------------------------------------------|
 | caffeinate.sh         | implemented | Prevent sleep with optional duration     |
 | dnd.sh                | implemented | Toggle Focus/DND, with auto-disable      |
+| install-codex.sh      | implemented | Install OpenAI Codex CLI via brew cask (idempotent, `--dry-run`) |
 | app-startup.sh        | stub        | Launch apps in correct order/Space       |
 | login-audit.sh        | stub        | Show recent login history                |
 | display-profile.sh    | stub        | Switch display resolution/profile        |
